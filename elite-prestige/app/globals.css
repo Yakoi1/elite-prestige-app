@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Work Sans", sans-serif;
+}
+
+.font-jost {
+  font-family: "Jost", sans-serif;
+}
+
+.font-serif-brand {
+  font-family: "Cormorant Garamond", serif;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23c9a24c' stroke-width='1.6'%3E%3Cpath d='M5 7.5l5 5 5-5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  background-size: 0.85rem;
+  padding-right: 2.5rem !important;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+select:hover {
+  border-color: rgba(201, 162, 76, 0.5) !important;
+}
+
+select:focus {
+  border-color: rgb(var(--color-gold)) !important;
+}
+
+select option {
+  background-color: #0a2a4a;
+  color: #f3eee5;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #02121f;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #c9a24c, #8a6f34);
+  border: 2px solid #02121f;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #e7d19a;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #c9a24c #02121f;
+}

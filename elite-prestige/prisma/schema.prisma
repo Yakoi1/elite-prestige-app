@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  isSystem    Boolean  @default(false)
+  permissions String[]
+  users       User[]
+  createdAt   DateTime @default(now())
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  username           String   @unique
+  passwordHash       String
+  roleId             String
+  role               Role     @relation(fields: [roleId], references: [id])
+  mustChangePassword Boolean  @default(true)
+  createdAt          DateTime @default(now())
+}
+
+model Vehicle {
+  id             String   @id @default(cuid())
+  name           String
+  category       String
+  categoryLabel  String
+  subCategory    String? // ex : "Berline de Luxe", "SUV/4x4", "Sportive", "Hypercar" — pour Terrestre
+  model          String
+  imageUrl       String
+  imageUrl2      String?
+  imageUrl3      String?
+  imageUrl4      String?
+  imageAspect    String   @default("video") // "video" (16:9) ou "square" (1:1)
+  price          Int? // tarif 24h (affiché publiquement)
+  price3d        Int? // tarif 3 jours
+  price7d        Int? // tarif 1 semaine
+  priceLabel     String
+  durationLabel  String   @default("24h")
+  description    String?
+  badgePromotion Boolean  @default(false)
+  badgeNew       Boolean  @default(false)
+  badgeTrending  Boolean  @default(false)
+  // Gestion / comptabilité (usage interne, jamais affiché publiquement)
+  licensePlate   String?  @unique
+  vehicleUuid    String?  @unique
+  purchasePrice  Int? // prix d'achat du véhicule
+  customPrice    Int? // prix des customisations, facultatif
+  invoices       Invoice[]
+  addedAt        DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Client {
+  id                  String    @id @default(cuid())
+  name                String
+  phone               String
+  driverLicenseImage  String?   @db.Text // capture d'écran du permis, encodée en base64
+  invoices            Invoice[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([name, phone])
+}
+
+model Invoice {
+  id             String   @id @default(cuid())
+  vehicleId      String?
+  vehicle        Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  vehicleName    String // snapshot au moment de la facture
+  categoryLabel  String
+  vehicleUuid    String?
+  licensePlate   String?
+  duration       String // "24h" | "3j" | "7j"
+  amount         Int
+  clientId       String?
+  client         Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  clientName     String?
+  clientPhone    String?
+  createdById    String?
+  createdByName  String
+  createdAt      DateTime @default(now())
+}
+
+model Expense {
+  id            String   @id @default(cuid())
+  label         String
+  amount        Int
+  note          String?
+  createdByName String
+  createdAt     DateTime @default(now())
+}
+
+model CompanyAccount {
+  id             String   @id @default("company")
+  bankBalance    Int      @default(0)
+  taxRatePercent Float    @default(0) // taux d'imposition sur le chiffre d'affaires, modifiable
+  updatedAt      DateTime @updatedAt
+}
+
+model AccountingArchive {
+  id                 String            @id @default(cuid())
+  totalRevenue       Int
+  totalPurchaseCost  Int
+  totalCustomCost    Int
+  totalExpenses      Int
+  taxRatePercent     Float
+  taxAmount          Int
+  netResult          Int
+  bankBalanceBefore  Int
+  bankBalanceAfter   Int
+  invoiceCount       Int
+  closedByName       String
+  invoices           ArchivedInvoice[]
+  expenses           ArchivedExpense[]
+  createdAt          DateTime          @default(now())
+}
+
+model ArchivedInvoice {
+  id            String            @id @default(cuid())
+  archiveId     String
+  archive       AccountingArchive @relation(fields: [archiveId], references: [id], onDelete: Cascade)
+  vehicleName   String
+  categoryLabel String
+  vehicleUuid   String?
+  licensePlate  String?
+  duration      String
+  amount        Int
+  clientName    String?
+  clientPhone   String?
+  createdByName String
+  createdAt     DateTime
+}
+
+model ArchivedExpense {
+  id            String            @id @default(cuid())
+  archiveId     String
+  archive       AccountingArchive @relation(fields: [archiveId], references: [id], onDelete: Cascade)
+  label         String
+  amount        Int
+  note          String?
+  createdByName String
+  createdAt     DateTime
+}
+
+model YachtPackage {
+  id        String   @id @default(cuid())
+  label     String
+  price     Int
+  imageUrl  String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model YachtOptionCategory {
+  id            String              @id @default(cuid())
+  key           String              @unique
+  label         String
+  description   String? // texte explicatif affiché au-dessus de l'option (admin + site)
+  type          String // "choice" (liste d'images au choix) ou "text" (saisie libre du client)
+  multiple      Boolean             @default(false) // true = plusieurs choix cumulables (ex: Hélico + Jetski), chacun avec son propre prix
+  price         Int // prix appliqué quand on s'écarte du 1er choix (mode simple) ; ignoré en mode "multiple"
+  imageAspect   String              @default("video") // "video" (16:9) ou "square" (1:1) — pour les options de type "choice"
+  // Réglages d'affichage du texte directement sur la photo (pour les options de type "text")
+  textPositionX Int                 @default(50) // % depuis la gauche
+  textPositionY Int                 @default(50) // % depuis le haut
+  textFontFamily String?
+  textItalic    Boolean             @default(false)
+  textFontSize  Int                 @default(32)
+  textColor     String              @default("#000000")
+  sortOrder     Int                 @default(0)
+  choices       YachtOptionChoice[]
+  createdAt     DateTime            @default(now())
+}
+
+model YachtOptionChoice {
+  id         String              @id @default(cuid())
+  categoryId String
+  category   YachtOptionCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  label      String
+  imageUrl   String?
+  price      Int? // prix propre à ce choix, utilisé seulement si la catégorie est en mode "multiple"
+  sortOrder  Int                 @default(0)
+  createdAt  DateTime            @default(now())
+}
+
+model YachtSettings {
+  id                      String   @id @default("yacht")
+  presentationImageUrl    String   @default("")
+  presentationImageUrl2   String   @default("") // 2e photo, transition automatique avec la 1ère
+  textBackgroundImageUrl  String   @default("")
+  textBackgroundAspect    String   @default("video") // "video" (16:9) ou "square" (1:1)
+  packageStepOrder        Int      @default(-1) // position de la page Forfait parmi les options (comparé au sortOrder des options)
+  updatedAt               DateTime @updatedAt
+}
+
+model YachtGalleryImage {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model SiteTheme {
+  id         String   @id @default("site")
+  bg         String   @default("#02121F") // fond principal
+  card       String   @default("#0a2a4a") // fond des blocs / cartes
+  gold       String   @default("#c9a24c") // couleur d'accent / boutons
+  goldlight  String   @default("#e7d19a") // accent clair / survols
+  cream      String   @default("#f3eee5") // texte principal / titres
+  gray1      String   @default("#949399") // texte secondaire
+  gray2      String   @default("#5f5f65") // texte discret / légendes
+  updatedAt  DateTime @updatedAt
+}
