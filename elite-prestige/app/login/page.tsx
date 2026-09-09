@@ -1,5 +1,6 @@
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
 
 async function login(formData: FormData) {
   "use server";
@@ -11,13 +12,13 @@ async function login(formData: FormData) {
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      throw new Error("Identifiant ou mot de passe incorrect.");
+      redirect("/login?error=1");
     }
     throw error;
   }
 }
 
-export default function LoginPage() {
+export default function LoginPage({ searchParams }: { searchParams: { error?: string } }) {
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
       <form
@@ -32,6 +33,10 @@ export default function LoginPage() {
             Accès collaborateur
           </p>
         </div>
+
+        {searchParams.error && (
+          <p className="text-sm text-red-400 text-center -mb-1">Identifiant ou mot de passe incorrect.</p>
+        )}
 
         <div className="flex flex-col gap-2">
           <label className="font-jost text-[0.6rem] tracking-[0.18em] uppercase text-gray2">
