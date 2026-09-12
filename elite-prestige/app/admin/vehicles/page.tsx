@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { createVehicleQuick, deleteVehicle } from "./actions";
@@ -6,7 +6,7 @@ import Link from "next/link";
 import SuccessToast from "./SuccessToast";
 
 export default async function VehiclesPage() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[];
   const canEdit = hasPermission(perms, PERMISSIONS.VEHICLES_EDIT);
 

@@ -1,13 +1,13 @@
 "use server";
 
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 
 async function requireUsersManage() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[] | undefined;
   if (!hasPermission(perms, PERMISSIONS.USERS_MANAGE)) {
     throw new Error("Action non autorisée : permission 'users.manage' requise.");

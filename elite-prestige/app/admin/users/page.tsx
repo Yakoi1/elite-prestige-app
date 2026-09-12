@@ -1,11 +1,11 @@
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { createUser, updateUserRole, resetUserPassword, deleteUser } from "./actions";
 
 export default async function UsersPage() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[];
   if (!hasPermission(perms, PERMISSIONS.USERS_MANAGE)) redirect("/admin");
 

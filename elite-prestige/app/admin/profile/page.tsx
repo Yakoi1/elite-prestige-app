@@ -1,11 +1,12 @@
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import WeeklyServiceLive from "./WeeklyServiceLive";
 
 async function changeOwnPassword(formData: FormData) {
   "use server";
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   if (!session?.user) throw new Error("Non connecté.");
 
   const currentPassword = String(formData.get("currentPassword") || "");
@@ -36,11 +37,57 @@ async function changeOwnPassword(formData: FormData) {
 }
 
 export default async function ProfilePage() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
+  const userId = (session?.user as any)?.id as string | undefined;
+  const perms = (session?.user as any)?.permissions as string[] | undefined;
+
+  let personalRevenue = 0;
+  let weeklyBaseHours = 0;
+  let activeStartedAt: string | null = null;
+
+  if (userId) {
+    const startOfWeek = new Date();
+    const day = startOfWeek.getDay() || 7; // lundi = 1 ... dimanche = 7
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(startOfWeek.getDate() - (day - 1));
+
+    const [invoiceSum, weekShifts, activeShift] = await Promise.all([
+      prisma.invoice.aggregate({ where: { createdById: userId }, _sum: { amount: true } }),
+      prisma.shiftLog.findMany({ where: { userId, startedAt: { gte: startOfWeek } } }),
+      prisma.shiftLog.findFirst({ where: { userId, endedAt: null } })
+    ]);
+
+    personalRevenue = invoiceSum._sum.amount ?? 0;
+    activeStartedAt = activeShift?.startedAt.toISOString() ?? null;
+    weeklyBaseHours = weekShifts.reduce((sum, s) => {
+      const end = s.endedAt ?? (s.id === activeShift?.id ? new Date() : s.endedAt);
+      if (!end) return sum; // service en cours, comptabilisé en direct côté client
+      return sum + (end.getTime() - s.startedAt.getTime()) / 1000 / 60 / 60;
+    }, 0);
+  }
 
   return (
     <div>
       <h1 className="font-jost text-xl tracking-[0.1em] uppercase mb-8">Mon profil</h1>
+
+      {userId && (
+        <div className="grid sm:grid-cols-2 gap-4 mb-8 max-w-md">
+          <div className="border border-white/10 bg-card p-5">
+            <p className="font-jost text-[0.6rem] tracking-[0.15em] uppercase text-gray2 mb-2">
+              Mon chiffre d'affaires
+            </p>
+            <p className="font-jost text-xl text-goldlight">{personalRevenue.toLocaleString("fr-FR")}$</p>
+          </div>
+          <div className="border border-white/10 bg-card p-5">
+            <p className="font-jost text-[0.6rem] tracking-[0.15em] uppercase text-gray2 mb-2">
+              Service cette semaine
+            </p>
+            <p className="font-jost text-xl text-goldlight">
+              <WeeklyServiceLive baseHours={weeklyBaseHours} activeStartedAt={activeStartedAt} />
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="border border-white/10 bg-card p-6 max-w-md">
         <p className="text-sm text-gray1 mb-6">

@@ -1,12 +1,12 @@
 "use server";
 
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
 
 async function requireThemeEdit() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[] | undefined;
   if (!hasPermission(perms, PERMISSIONS.THEME_EDIT)) {
     throw new Error("Action non autorisée : permission 'theme.edit' requise.");
@@ -45,12 +45,24 @@ export async function resetSiteTheme() {
     goldlight: "#e7d19a",
     cream: "#f3eee5",
     gray1: "#949399",
-    gray2: "#5f5f65"
+    gray2: "#5f5f65",
+    effect: "none"
   };
   await prisma.siteTheme.upsert({
     where: { id: "site" },
     update: defaults,
     create: { id: "site", ...defaults }
+  });
+  revalidatePath("/", "layout");
+}
+
+export async function updateThemeEffect(formData: FormData) {
+  await requireThemeEdit();
+  const effect = String(formData.get("effect") || "none");
+  await prisma.siteTheme.upsert({
+    where: { id: "site" },
+    update: { effect },
+    create: { id: "site", effect }
   });
   revalidatePath("/", "layout");
 }

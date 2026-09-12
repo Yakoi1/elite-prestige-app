@@ -289,7 +289,7 @@ export default function YachtConfigurator({
                     ))}
                   </div>
                 </div>
-              )}              
+              )}
 
               {current.kind === "category" && (
                 <CategoryStep

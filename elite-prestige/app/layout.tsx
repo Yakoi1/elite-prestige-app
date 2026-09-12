@@ -15,7 +15,8 @@ const DEFAULT_THEME = {
   goldlight: "#e7d19a",
   cream: "#f3eee5",
   gray1: "#949399",
-  gray2: "#5f5f65"
+  gray2: "#5f5f65",
+  effect: "none"
 };
 
 export default async function RootLayout({
@@ -52,7 +53,24 @@ export default async function RootLayout({
         />
         <style dangerouslySetInnerHTML={{ __html: cssVars }} />
       </head>
-      <body className="bg-bg text-cream font-light">{children}</body>
+      <body className={`bg-bg text-cream font-light effect-${theme.effect}`}>
+        {theme.effect === "particles" && (
+          <div className="particles-field" aria-hidden="true">
+            {Array.from({ length: 14 }).map((_, i) => (
+              <span
+                key={i}
+                className="particle"
+                style={{
+                  left: `${(i * 37) % 100}%`,
+                  animationDelay: `${(i % 7) * 1.8}s`,
+                  animationDuration: `${14 + (i % 5) * 3}s`
+                }}
+              />
+            ))}
+          </div>
+        )}
+        {children}
+      </body>
     </html>
   );
 }

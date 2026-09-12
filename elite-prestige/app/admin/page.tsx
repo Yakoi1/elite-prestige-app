@@ -1,9 +1,9 @@
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import Link from "next/link";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 
 export default async function AdminDashboard() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[];
 
   return (
@@ -18,6 +18,16 @@ export default async function AdminDashboard() {
           >
             <p className="font-jost text-xs tracking-[0.15em] uppercase text-gold mb-2">Flotte</p>
             <p className="text-sm text-gray1">Consulter et gérer les véhicules du catalogue.</p>
+          </Link>
+        )}
+
+        {hasPermission(perms, PERMISSIONS.SERVICE_USE) && (
+          <Link
+            href="/admin/service"
+            className="border border-white/10 bg-card p-6 hover:border-gold/50 transition"
+          >
+            <p className="font-jost text-xs tracking-[0.15em] uppercase text-gold mb-2">Service</p>
+            <p className="text-sm text-gray1">Prendre ou terminer ton service.</p>
           </Link>
         )}
 

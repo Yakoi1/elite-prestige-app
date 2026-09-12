@@ -1,4 +1,5 @@
-import { auth, signOut } from "@/auth";
+import { signOut } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
@@ -8,7 +9,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   if (!session?.user) redirect("/login");
 
   const perms = (session.user as any).permissions as string[];
@@ -31,6 +32,11 @@ export default async function AdminLayout({
           {hasPermission(perms, PERMISSIONS.VEHICLES_VIEW) && (
             <Link href="/admin/vehicles" className="text-gray1 hover:text-gold transition">
               Véhicules
+            </Link>
+          )}
+          {hasPermission(perms, PERMISSIONS.SERVICE_USE) && (
+            <Link href="/admin/service" className="text-gray1 hover:text-gold transition">
+              Service
             </Link>
           )}
           {hasPermission(perms, PERMISSIONS.INVOICES_VIEW) && (

@@ -15,7 +15,8 @@ export const PERMISSIONS = {
   ACCOUNTING_VIEW: "accounting.view",
   ACCOUNTING_EDIT: "accounting.edit",
   ARCHIVES_VIEW: "archives.view",
-  ARCHIVES_MANAGE: "archives.manage"
+  ARCHIVES_MANAGE: "archives.manage",
+  SERVICE_USE: "service.use"
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -37,7 +38,8 @@ export const ALL_PERMISSIONS: { key: Permission; label: string }[] = [
   { key: PERMISSIONS.ACCOUNTING_VIEW, label: "Voir la comptabilité" },
   { key: PERMISSIONS.ACCOUNTING_EDIT, label: "Modifier la comptabilité (solde, dépenses, impôts, clôture)" },
   { key: PERMISSIONS.ARCHIVES_VIEW, label: "Voir les archives (comptabilité et clients)" },
-  { key: PERMISSIONS.ARCHIVES_MANAGE, label: "Supprimer des archives ou des clients" }
+  { key: PERMISSIONS.ARCHIVES_MANAGE, label: "Supprimer des archives ou des clients" },
+  { key: PERMISSIONS.SERVICE_USE, label: "Prendre son service (pointeuse)" }
 ];
 
 export function hasPermission(

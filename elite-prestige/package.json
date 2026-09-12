@@ -8,7 +8,8 @@
     "start": "next start",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "admin:reset-password": "tsx prisma/reset-admin-password.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

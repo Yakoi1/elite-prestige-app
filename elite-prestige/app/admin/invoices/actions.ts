@@ -1,12 +1,12 @@
 "use server";
 
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
 
 async function requireCreatePermission() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[] | undefined;
   if (!hasPermission(perms, PERMISSIONS.INVOICES_CREATE)) {
     throw new Error("Action non autorisée : permission 'invoices.create' requise.");
@@ -15,7 +15,7 @@ async function requireCreatePermission() {
 }
 
 async function requireDeletePermission() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[] | undefined;
   if (!hasPermission(perms, PERMISSIONS.INVOICES_DELETE)) {
     throw new Error("Action non autorisée : permission 'invoices.delete' requise.");

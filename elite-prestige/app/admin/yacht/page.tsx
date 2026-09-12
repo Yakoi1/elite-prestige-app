@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
@@ -20,7 +20,7 @@ import {
 } from "./actions";
 
 export default async function YachtAdminPage() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[];
   if (!hasPermission(perms, PERMISSIONS.YACHT_VIEW)) redirect("/admin");
   const canEdit = hasPermission(perms, PERMISSIONS.YACHT_EDIT);

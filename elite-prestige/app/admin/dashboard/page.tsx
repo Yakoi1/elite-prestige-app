@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
@@ -12,15 +12,17 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[];
   if (!hasPermission(perms, PERMISSIONS.DASHBOARD_VIEW)) redirect("/admin");
 
-  const [invoices, vehicles, expenses, account] = await Promise.all([
+  const [invoices, vehicles, expenses, account, users, shifts] = await Promise.all([
     prisma.invoice.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.vehicle.findMany(),
     prisma.expense.findMany(),
-    prisma.companyAccount.findUnique({ where: { id: "company" } })
+    prisma.companyAccount.findUnique({ where: { id: "company" } }),
+    prisma.user.findMany(),
+    prisma.shiftLog.findMany()
   ]);
 
   const totalRevenue = invoices.reduce((sum, i) => sum + i.amount, 0);
@@ -69,6 +71,17 @@ export default async function DashboardPage() {
   }
   const fleetAllocation = Array.from(fleetByCategory.entries()).map(([name, value]) => ({ name, value }));
 
+  // Classement temps de service
+  const now2 = Date.now();
+  const serviceMsByUser = new Map<string, number>();
+  for (const s of shifts) {
+    const end = s.endedAt ? s.endedAt.getTime() : now2;
+    serviceMsByUser.set(s.userId, (serviceMsByUser.get(s.userId) || 0) + (end - s.startedAt.getTime()));
+  }
+  const serviceRanking = users
+    .map((u) => ({ name: u.username, hours: (serviceMsByUser.get(u.id) || 0) / 1000 / 60 / 60 }))
+    .sort((a, b) => b.hours - a.hours);
+
   return (
     <div>
       <h1 className="font-jost text-2xl tracking-[0.1em] uppercase mb-8">Tableau de bord</h1>
@@ -97,6 +110,27 @@ export default async function DashboardPage() {
         </ChartCard>
         <ChartCard title="Répartition de la flotte">
           <FleetAllocationChart data={fleetAllocation} />
+        </ChartCard>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+        <ChartCard title="Temps de service par employé">
+          <div className="flex flex-col gap-2">
+            {serviceRanking.map((u, i) => (
+              <div key={u.name} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                <span className="flex items-center gap-3">
+                  <span className="font-jost text-xs text-gray2 w-5">{i + 1}.</span>
+                  <span className="text-sm">{u.name}</span>
+                </span>
+                <span className={`font-jost text-sm ${u.hours > 0 ? "text-goldlight" : "text-gray2"}`}>
+                  {u.hours > 0 ? `${u.hours.toFixed(1)} h` : "Jamais en service"}
+                </span>
+              </div>
+            ))}
+            {serviceRanking.length === 0 && (
+              <p className="text-sm text-gray2 text-center py-4">Aucun employé pour l'instant.</p>
+            )}
+          </div>
         </ChartCard>
       </div>
 

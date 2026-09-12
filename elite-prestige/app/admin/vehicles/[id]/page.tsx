@@ -1,11 +1,11 @@
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { redirect, notFound } from "next/navigation";
 import { updateVehicle } from "../actions";
 
 export default async function EditVehiclePage({ params }: { params: { id: string } }) {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[];
   if (!hasPermission(perms, PERMISSIONS.VEHICLES_EDIT)) redirect("/admin/vehicles");
 

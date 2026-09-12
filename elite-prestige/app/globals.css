@@ -72,3 +72,76 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #c9a24c #02121f;
 }
+
+/* ================= Effets visuels du thème ================= */
+
+body.effect-ambient-glow::before {
+  content: "";
+  position: fixed;
+  top: -25%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150%;
+  height: 55%;
+  background: radial-gradient(ellipse at center, rgba(var(--color-gold), 0.14), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.effect-vignette::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  box-shadow: inset 0 0 220px 90px rgba(0, 0, 0, 0.65);
+}
+
+body.effect-grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.particles-field {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  bottom: -10px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgb(var(--color-gold));
+  opacity: 0;
+  animation-name: float-up;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.55;
+  }
+  92% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-105vh) translateX(24px);
+    opacity: 0;
+  }
+}

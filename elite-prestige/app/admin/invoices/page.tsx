@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getSessionWithFreshPermissions } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
@@ -20,7 +20,7 @@ export default async function InvoicesPage({
 }: {
   searchParams: { page?: string; pageSize?: string };
 }) {
-  const session = await auth();
+  const session = await getSessionWithFreshPermissions();
   const perms = (session?.user as any)?.permissions as string[];
   if (!hasPermission(perms, PERMISSIONS.INVOICES_VIEW)) redirect("/admin");
   const canCreate = hasPermission(perms, PERMISSIONS.INVOICES_CREATE);

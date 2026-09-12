@@ -217,5 +217,15 @@ model SiteTheme {
   cream      String   @default("#f3eee5") // texte principal / titres
   gray1      String   @default("#949399") // texte secondaire
   gray2      String   @default("#5f5f65") // texte discret / légendes
+  effect     String   @default("none") // effet visuel global du site
   updatedAt  DateTime @updatedAt
+}
+
+model ShiftLog {
+  id        String    @id @default(cuid())
+  userId    String
+  userName  String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
 }

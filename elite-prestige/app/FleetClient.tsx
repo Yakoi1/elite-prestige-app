@@ -326,7 +326,7 @@ export default function FleetClient({ vehicles }: { vehicles: Vehicle[] }) {
           onClick={(e) => e.target === e.currentTarget && setActive(null)}
         >
           <div
-            className="relative w-full max-w-4xl max-h-[92vh] overflow-auto border bg-[#082238] md:grid md:grid-cols-[1.3fr_1fr]"
+            className="relative w-full max-w-6xl max-h-[92vh] overflow-auto border bg-[#082238] md:grid md:grid-cols-[1.4fr_1fr]"
             style={{ borderColor: `${themeFor(active.category).accent}55` }}
           >
             <button
@@ -346,7 +346,7 @@ export default function FleetClient({ vehicles }: { vehicles: Vehicle[] }) {
                 <div>
                   <div
                     className={`relative overflow-hidden w-full bg-black/40 ${
-                      active.imageAspect === "square" ? "aspect-square" : "aspect-video md:h-full md:aspect-auto"
+                      active.imageAspect === "square" ? "aspect-square" : "aspect-video"
                     }`}
                   >
                     <div
@@ -510,14 +510,14 @@ function DenseCard({ item, theme, onSelect }: { item: Vehicle; theme: Theme; onS
   const isSquare = item.imageAspect === "square";
   return (
     <article
-      className={`relative bg-card overflow-hidden group rounded-lg ${isSquare ? "aspect-square" : "aspect-video col-span-2"}`}
+      onClick={() => onSelect(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onSelect(item)}
+      className={`relative bg-card overflow-hidden group rounded-lg cursor-pointer ${isSquare ? "aspect-square" : "aspect-video col-span-2"}`}
     >
       <div
-        className="absolute -top-6 -right-6 w-28 h-28 rounded-full pointer-events-none opacity-70 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
-        style={{ backgroundColor: theme.accent }}
-      />
-      <div
-        className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-16 rounded-full pointer-events-none opacity-60 blur-2xl transition-opacity duration-500 group-hover:opacity-90"
+        className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full pointer-events-none opacity-70 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
         style={{ backgroundColor: theme.accent }}
       />
       <div
@@ -549,12 +549,9 @@ function DenseCard({ item, theme, onSelect }: { item: Vehicle; theme: Theme; onS
           <p className="text-gray1 text-xs mt-1.5">
             <span style={{ color: theme.accent }}>{item.priceLabel}</span>
           </p>
-          <button
-            onClick={() => onSelect(item)}
-            className="mt-3 font-jost text-[0.6rem] tracking-[0.12em] uppercase text-gray1 hover:text-cream transition"
-          >
+          <span className="mt-3 inline-block font-jost text-[0.6rem] tracking-[0.12em] uppercase text-gray1 group-hover:text-cream transition">
             Voir →
-          </button>
+          </span>
         </div>
       </div>
     </article>
@@ -565,16 +562,16 @@ function PanoramicCard({ item, theme, onSelect }: { item: Vehicle; theme: Theme;
   const isSquare = item.imageAspect === "square";
   return (
     <article
-      className={`relative bg-card overflow-hidden group rounded-lg ${
+      onClick={() => onSelect(item)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && onSelect(item)}
+      className={`relative bg-card overflow-hidden group rounded-lg cursor-pointer ${
         isSquare ? "aspect-square max-w-xl mx-auto" : "aspect-video md:aspect-[21/9]"
       }`}
     >
       <div
-        className="absolute -top-8 -right-8 w-40 h-40 rounded-full pointer-events-none opacity-70 blur-3xl transition-opacity duration-500 group-hover:opacity-100 z-10"
-        style={{ backgroundColor: theme.accent }}
-      />
-      <div
-        className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-2/3 h-20 rounded-full pointer-events-none opacity-60 blur-3xl transition-opacity duration-500 group-hover:opacity-90 z-10"
+        className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full pointer-events-none opacity-70 blur-3xl transition-opacity duration-500 group-hover:opacity-100 z-10"
         style={{ backgroundColor: theme.accent }}
       />
       <div
@@ -603,14 +600,9 @@ function PanoramicCard({ item, theme, onSelect }: { item: Vehicle; theme: Theme;
         <p className="text-gray1 text-sm mt-2.5">
           Tarif : <span className="text-goldlight">{item.priceLabel}</span>
         </p>
-        <button
-          onClick={() => onSelect(item)}
-          className="mt-5 flex items-center gap-2 font-jost text-xs tracking-[0.16em] uppercase text-cream transition w-fit"
-          onMouseEnter={(e) => (e.currentTarget.style.color = theme.accent)}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "")}
-        >
+        <span className="mt-5 flex items-center gap-2 font-jost text-xs tracking-[0.16em] uppercase text-cream transition w-fit group-hover:text-goldlight">
           Voir le véhicule <span className="w-6 h-px" style={{ backgroundColor: theme.accent }} />
-        </button>
+        </span>
       </div>
     </article>
   );
